@@ -1,2 +1,2 @@
 ### Using the `TestNotebook.ipynb` Notebook
-If you wish to use the test notebook, please run the command `git update-index --skip-worktree notebooks/TestNotebook.ipynb` to keep the changes to your notebook on your local machine and not commit it to the repo.
+If you wish to use the test notebook, please run the command `git update-index --skip-worktree TestNotebook.ipynb` to keep the changes to your notebook on your local machine and not commit it to the repo.
