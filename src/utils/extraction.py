@@ -24,7 +24,7 @@ def extract_key_vectors(vit: VisionTransformer) -> List[torch.Tensor]:
     Returns:
         List[torch.Tensor]: A list of key vector matrices for each block
     """
-    return [block.mlp.fc1.weight.detach.T for block in vit.blocks]
+    return [block.mlp.fc1.weight.detach().T for block in vit.blocks]
 
 def extract_computed_key_vectors(vit: VisionTransformer, 
                                  images: Union[List[torch.Tensor], torch.Tensor]) -> torch.Tensor:
