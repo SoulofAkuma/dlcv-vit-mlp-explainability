@@ -18,9 +18,14 @@ def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
         model  : Vision transformer
         k (int)
     Returns:
-        torch.tensor : with shape (k, 1000, 768) | 
+        (torch.tensor) : with shape (k, 1000, 768) |
+            - k : top k 
             - 1000 is the number of classes
             - 768 is the dimension of each key vector
+        (torch.tensor) : with shape (k, 2, 1000)    |
+            - k : top k
+            - 2 because there is a block_idx and a key_idx
+            - 1000 is the total number of classes.
     """
 
     # Extract key vectors and value vectors. Each of them has shape (12, 3072, 768).
@@ -51,6 +56,7 @@ def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
     topk_logits = logits
 
     topk_key_vectors = key_vectors[topk_indices[0], topk_indices[1], :].reshape(k, 1000, 768)
+    topk_indices = topk_indices.reshape(2, k, 1000).transpose(0, 1)
 
     return topk_key_vectors, topk_indices
 
@@ -117,7 +123,8 @@ def compare_dot_prod(
 
     # Fetch the desired key vector and its index (block_idx, key_idx).
     key_vec = topk_key_vectors[k, class_idx]
-    key_idx = topk_indices.T[class_idx]
+    # This has shape (2,), contain of a block_idx and a index for the key neuron.
+    key_idx = topk_indices.transpose(1, 2)[k, class_idx]
 
     avg_act = []
     for i, idx in enumerate(rand_class_indices):
@@ -125,7 +132,7 @@ def compare_dot_prod(
         #print(f'rand img indices = {rand_img_indices.tolist()}')
     
         # Extract the activation values.
-        # out: shape (len(rand_img_indices), 12, 197, 3072)
+        # out: shape (12, len(rand_img_indices), 197, 3072)
         out = extract_computed_key_vectors(model, imgs[i])
 
         # This should have shape (len(rand_img_indices), 12, 3072, 197)
