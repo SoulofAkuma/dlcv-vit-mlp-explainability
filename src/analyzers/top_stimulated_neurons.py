@@ -31,18 +31,22 @@ def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
     value_vectors = torch.stack(value_vectors)
 
     # Project the value vectors onto the embedding space.
+    # value_projected.shape (12, 3072, 1000)
     value_projected = embedding_projection(model, value_vectors)
 
-    # value_projected.shape (12, 3072, 1000)
-    logits = value_projected.reshape(12*3072, 1000).topk(5, dim=0).values
-    indices = value_projected.reshape(12*3072, 1000).topk(5, dim=0).indices
+    # logits.shape (5, 1000) ,  indices.shape (5, 1000) 
+    logits = value_projected.reshape(12*3072, 1000).topk(k, dim=0).values
+    indices = value_projected.reshape(12*3072, 1000).topk(k, dim=0).indices
 
+    # block_idx.shape (5, 1000), value_idx.shape (5, 1000)
     block_idx, value_idx = np.unravel_index(indices.cpu(), (12, 3072))
     block_idx, value_idx = torch.from_numpy(block_idx), torch.from_numpy(value_idx)
 
+    # block_idx.shape (5000,) , value_idx.shape (5000,) 
     block_idx = torch.flatten(block_idx)
     value_idx = torch.flatten(value_idx)
 
+    # topk_indices.shape (2, 5000)
     topk_indices = torch.stack([block_idx, value_idx])
     topk_logits = logits
 
