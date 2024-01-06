@@ -34,23 +34,23 @@ def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
     # value_projected.shape (12, 3072, 1000)
     value_projected = embedding_projection(model, value_vectors)
 
-    # logits.shape (5, 1000) ,  indices.shape (5, 1000) 
+    # logits.shape (k, 1000) ,  indices.shape (k, 1000) 
     logits = value_projected.reshape(12*3072, 1000).topk(k, dim=0).values
     indices = value_projected.reshape(12*3072, 1000).topk(k, dim=0).indices
 
-    # block_idx.shape (5, 1000), value_idx.shape (5, 1000)
+    # block_idx.shape (k, 1000), value_idx.shape (k, 1000)
     block_idx, value_idx = np.unravel_index(indices.cpu(), (12, 3072))
     block_idx, value_idx = torch.from_numpy(block_idx), torch.from_numpy(value_idx)
 
-    # block_idx.shape (5000,) , value_idx.shape (5000,) 
+    # block_idx.shape (k*1000,) , value_idx.shape (k*1000,) 
     block_idx = torch.flatten(block_idx)
     value_idx = torch.flatten(value_idx)
 
-    # topk_indices.shape (2, 5000)
+    # topk_indices.shape (2, k*1000)
     topk_indices = torch.stack([block_idx, value_idx])
     topk_logits = logits
 
-    topk_key_vectors = key_vectors[topk_indices[0], topk_indices[1], :].reshape(5, 1000, 768)
+    topk_key_vectors = key_vectors[topk_indices[0], topk_indices[1], :].reshape(k, 1000, 768)
 
     return topk_key_vectors, topk_indices
 
