@@ -15,4 +15,4 @@
 conda init
 conda activate /scratch/vihps/vihps01/vit-mlp-explainability/env
 
-srun python3 /scratch/vihps/vihps01/vit-mlp-explainability/code/jobs/lucent/generate_configs.py ----output-dir /scratch/vihps/vihps01/vit-mlp-explainability/configs
+srun python3 /scratch/vihps/vihps01/vit-mlp-explainability/code/jobs/lucent/generate_configs.py --output-dir /scratch/vihps/vihps01/vit-mlp-explainability/configs

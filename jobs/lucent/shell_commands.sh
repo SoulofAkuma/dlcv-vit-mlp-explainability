@@ -8,6 +8,7 @@ conda activate /scratch/vihps/vihps01/vit-mlp-explainability/env
 cd /scratch/vihps/vihps01/vit-mlp-explainability/
 git clone https://github.com/SoulofAkuma/dlcv-vit-mlp-explainability ./code
 cd code
+git checkout cluster
 python -m pip install -r requirements.txt
 python -m pip install .
 
