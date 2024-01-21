@@ -43,6 +43,20 @@ class ImageNetDataset(Dataset):
         """
         return MAPPING_FRAME.index.tolist() if max_nr is None else \
             MAPPING_FRAME.sample(max_nr, random_state=seed, replace=False).index.tolist()
+    
+    def get_index_for_category(self, category: str) -> int:
+        return MAPPING_FRAME.loc[category]['class']
+
+    def get_names_for_classes(self, classes: List[str]) -> List[str]:
+        """Return the readable name for a list of classes
+
+        Args:
+            classes (List[str]): the list of class ids i.e. n07753275
+
+        Returns:
+            List[str]: The list of readable names i.e. pineapple
+        """
+        return MAPPING_FRAME.loc[classes]['category'].tolist()
 
     def get_images_from_class(self, imagenet_id: str) -> List:
         """Get all the items in the dataset from the given class
