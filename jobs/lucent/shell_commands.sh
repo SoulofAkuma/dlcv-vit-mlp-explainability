@@ -8,14 +8,16 @@ conda activate /scratch/vihps/vihps01/vit-mlp-explainability/env
 cd /scratch/vihps/vihps01/vit-mlp-explainability/
 git clone https://github.com/SoulofAkuma/dlcv-vit-mlp-explainability ./code
 cd code
-pip install -r requirements.txt
-pip install .
+python -m pip install -r requirements.txt
+python -m pip install .
 
 # Execute SLURM Job for generating the configs
 cd /scratch/vihps/vihps01/vit-mlp-explainability/
 sbatch ./code/jobs/lucent/jobscript_configs.sh
 
-#
+# Execute SLURM Job for generating the images
+cd /scratch/vihps/vihps01/vit-mlp-explainability/
+sbatch ./code/jobs/lucent/jobscript_images.sh
 
 # Generate the job configs (Preferably do this via a slurm job aswell because this loads a model)
 # cd /scratch/vihps/vihps01/vit-mlp-explainability/
