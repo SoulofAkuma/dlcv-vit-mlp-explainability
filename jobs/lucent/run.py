@@ -27,16 +27,19 @@ device = torch.device(f'cuda:{int(job_index) % device_count}'
                       if torch.cuda.is_available() else 'cpu')
 
 
+start_time = time.time()
 images = generate_images(config['model'], config['image_size'], config['thresholds'], config['classes'], device)
 
-start_time = time.time()
 for img_name in images.keys():
-    Image.fromarray(images[img_name]).save(os.path.join(RESULTS_PATH, f'{img_name}.png'))
+    if len(images[img_name]) > 3:
+        Image.fromarray(images[img_name][0]).save(os.path.join(RESULTS_PATH, f'{img_name}.png'))
+    else:
+        Image.fromarray(images[img_name]).save(os.path.join(RESULTS_PATH, f'{img_name}.png'))
 
 with open(os.path.join(RESULT_STATS_PATH, f'results_{job_index}.json'), 'w+') as file:
     json.dump({
         'job_index': job_index,
         'node': node_name,
         'execution_time': time.time() - start_time,
-        'images_generated': images.keys()
+        'images_generated': list(images.keys())
     }, file)
