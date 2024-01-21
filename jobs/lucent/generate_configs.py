@@ -22,9 +22,9 @@ def create_configs(dir: str):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model = create_model(MODEL, pretrained=True).to(device).eval()
 
-    values = extract_value_vectors(model)
-    embedded_values = embedding_projection(model, values)
-    most_pred_inds = most_predictive_ind_for_class(embedded_values)
+    values = extract_value_vectors(model, device=device).to(device)
+    embedded_values = embedding_projection(model, values, device=device).to(device)
+    most_pred_inds = most_predictive_ind_for_class(embedded_values, device=device)
 
     configs = []
 
