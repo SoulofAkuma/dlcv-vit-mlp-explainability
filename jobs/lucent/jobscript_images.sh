@@ -15,4 +15,5 @@
 conda init
 conda activate /scratch/vihps/vihps01/vit-mlp-explainability/env
 
+export MIOPEN_USER_DB_PATH=/scratch/vihps/vihps01/.config/miopen_$SLURM_PROCID/
 srun python3 /scratch/vihps/vihps01/vit-mlp-explainability/code/jobs/lucent/run.py

@@ -16,6 +16,8 @@ os.makedirs(RESULT_STATS_PATH, exist_ok=True)
 job_index = os.environ['SLURM_PROCID']
 node_name = os.environ['SLURMD_NODENAME']
 
+os.environ['MIOPEN_USER_DB_PATH'] = f'/scratch/vihps/vihps01/.config/miopen_{job_index}/'
+
 config = None
 with open(os.path.join(CONFIG_PATH, f'config_{job_index}.json'), 'r') as file:
     config = json.load(file)
