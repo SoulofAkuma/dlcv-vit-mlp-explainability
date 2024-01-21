@@ -25,7 +25,7 @@ device = torch.device(f'cuda:{int(job_index) % device_count}'
                       if torch.cuda.is_available() else 'cpu')
 
 
-images = generate_images(config['model'], config['image_size'], config['thresholds'], config['classes'])
+images = generate_images(config['model'], config['image_size'], config['thresholds'], config['classes'], device)
 
 start_time = time.time()
 for img_name in images.keys():
