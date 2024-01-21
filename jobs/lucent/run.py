@@ -31,7 +31,7 @@ start_time = time.time()
 images = generate_images(config['model'], config['image_size'], config['thresholds'], config['classes'], device)
 
 for img_name in images.keys():
-    if len(images[img_name]) > 3:
+    if len(images[img_name].shape) > 3:
         Image.fromarray(images[img_name][0]).save(os.path.join(RESULTS_PATH, f'{img_name}.png'))
     else:
         Image.fromarray(images[img_name]).save(os.path.join(RESULTS_PATH, f'{img_name}.png'))
