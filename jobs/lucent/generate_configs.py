@@ -8,7 +8,7 @@ from src.utils.model import embedding_projection
 from src.analyzers.mlp_value_analyzer import most_predictive_ind_for_class
 
 MODEL = 'vit_base_patch16_224'
-IMAGE_SIZE = 256
+IMAGE_SIZE = 224
 THRESHOLDS = [250, 500, 750]
 
 def create_configs(dir: str):
