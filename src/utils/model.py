@@ -1,7 +1,7 @@
 from typing import Union, List
 import torch
 
-def embedding_projection(vit, values: Union[List[torch.Tensor],torch.Tensor]):
+def embedding_projection(vit, values: Union[List[torch.Tensor],torch.Tensor]) -> torch.Tensor:
     """Project the value vectors onto the class embedding space of the transformer
 
     Args:
