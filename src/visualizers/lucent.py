@@ -53,7 +53,7 @@ def transformer_diversity_objective(block: int):
     
     return inner
 
-def image_batch(width: int, batch_size: int, height: int=None, decorrelate=True):
+def image_batch(width: int, batch_size: int, height: int=None, decorrelate=True, device=None):
     """Get a lucent compatible param_f argument that contains the image
     and its parameters to optimize. This will initialize images with the
     lucent fft method, 3 channels and decorrelated colors
@@ -67,4 +67,4 @@ def image_batch(width: int, batch_size: int, height: int=None, decorrelate=True)
         Returns:
             Callable: A lucent compatible param_f image batch
     """
-    return lambda: param.image(width, height, batch=batch_size, decorrelate=decorrelate)
+    return lambda: param.image(width, height, batch=batch_size, decorrelate=decorrelate, device=device)
