@@ -1,13 +1,12 @@
 import numpy as np
 import torch
 
-from src.utils.extraction import extract_key_vectors
+from src.utils.extraction import extract_key_weights
 from src.utils.extraction import extract_value_vectors
 from src.utils.extraction import extract_computed_key_vectors
 from src.datasets.ImageNet import ImageNetDataset
 from src.utils.model import embedding_projection
 from src.utils.load_imgs import load_imgs_from_class_idx
-
 
 def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
     """
@@ -29,7 +28,7 @@ def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
     """
 
     # Extract key vectors and value vectors. Each of them has shape (12, 3072, 768).
-    key_vectors = extract_key_vectors(model)
+    key_vectors = extract_key_weights(model)
     key_vectors = torch.stack(key_vectors)
     key_vectors = key_vectors.transpose(1, 2)
     value_vectors = extract_value_vectors(model)

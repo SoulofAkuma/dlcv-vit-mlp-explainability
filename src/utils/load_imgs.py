@@ -35,7 +35,7 @@ def load_imgs_from_class_idx(
     for idx in class_idx:
 
         imagenet_id = class_index_map[str(idx)][0]
-        imgs = transform_images([img['img'] for img in dataset.get_images_from_class(imagenet_id)],
+        imgs = transform_images([img['img'] for img in dataset.get_images_from_imgnet_id(imagenet_id)],
                                 huggingface_model_descriptor)
         imgs = torch.stack(imgs)
         all_imgs.append(imgs)

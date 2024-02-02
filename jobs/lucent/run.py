@@ -28,7 +28,8 @@ device = torch.device(f'cuda:{int(job_index) % device_count}'
 
 
 start_time = time.time()
-images = generate_images(config['model'], config['image_size'], config['thresholds'], config['classes'], device)
+images = generate_images(config['model'], config['image_size'], config['model_img_size'], 
+                         config['thresholds'], config['classes'], device)
 
 for img_name in images.keys():
     if len(images[img_name].shape) > 3:

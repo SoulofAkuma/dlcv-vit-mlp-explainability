@@ -7,9 +7,10 @@ from src.utils.extraction import extract_value_vectors
 from src.utils.model import embedding_projection
 from src.analyzers.mlp_value_analyzer import most_predictive_ind_for_class
 
-MODEL = 'vit_base_patch16_224'
+MODEL = 'vit_base_patch16_384'
+MODEL_IMG_SIZE = 384
 IMAGE_SIZE = 128
-THRESHOLDS = [250, 500, 750]
+THRESHOLDS = [250, 500, 750, 1000]
 
 def create_configs(dir: str):
 
@@ -37,9 +38,10 @@ def create_configs(dir: str):
             imagenet_classes[mapping[str(i + ii)][0]] = {'block': block, 'index': ind}
         configs.append({
                 'model': MODEL,
+                'model_img_size': MODEL_IMG_SIZE,
                 'classes': imagenet_classes,
                 'image_size': IMAGE_SIZE,
-                'thresholds': THRESHOLDS
+                'thresholds': THRESHOLDS,
             })
 
     for i, config in enumerate(configs):
