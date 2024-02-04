@@ -29,6 +29,10 @@ def generate_images(model_name, image_size, model_img_size, thresholds, classes,
         clear_result = render.render_vis(model, objective, param_f_clear, transforms=transforms,
                                          thresholds=thresholds, show_image=False, show_inline=False, 
                                          device=device)
+        
+        transforms = transform.standard_transforms_for_device(device).copy()
+        transforms.append(torch.nn.Upsample(size=model_img_size, mode='bilinear', align_corners=True))
+        
         div_result = render.render_vis(model, div_obj, param_f_div, transforms=transforms,
                                        thresholds=thresholds,show_image=False, show_inline=False, 
                                        device=device)
