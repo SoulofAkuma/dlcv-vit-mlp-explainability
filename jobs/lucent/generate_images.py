@@ -3,7 +3,7 @@ from src.visualizers.lucent import key_neuron_objective, transformer_diversity_o
 from lucent.optvis import render
 import lucent.optvis as optvis
 import lucent.optvis.param as param
-from lucent.optivs import transform
+from lucent.optvis import transform
 import numpy as np
 import torch
 
