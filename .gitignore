@@ -4,3 +4,4 @@ TestNotebook.ipynb
 **/results/*
 **/build/*
 dlcv_vit_mlp_explainability.egg-info/*
+configs/*

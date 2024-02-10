@@ -9,7 +9,7 @@ from src.analyzers.mlp_value_analyzer import most_predictive_ind_for_class
 
 MODEL = 'vit_base_patch16_384'
 MODEL_IMG_SIZE = 384
-IMAGE_SIZE = 128
+IMAGE_SIZE = 384
 THRESHOLDS = [250, 500, 750, 1000]
 
 def create_configs(dir: str):

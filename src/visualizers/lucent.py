@@ -11,7 +11,7 @@ from src.analyzers. mlp_value_analyzer import most_predictive_ind_for_class
 from src.utils.imagenet import get_index_for_category
 
 @wrap_objective()
-def key_neuron_objective(block: int, column: int, batch=None):
+def key_neuron_objective(block: int, column: int, batch=None, before_nonlinear=True):
     """Get a lucent compatible objective to optimize towards the
     value of a key vector. Ideally you pass the row index of a 
     value vector that most predicts a class here, to optimize via the
@@ -20,12 +20,18 @@ def key_neuron_objective(block: int, column: int, batch=None):
     Args:
         block (int): The block the key neuron/column vector is on
         column (int): The index of the column vector
-        batch (int): The batch size (how many images to optimize)
+        batch (int, optional): The batch size (how many images to optimize). Defaults to None.
+        before_nonlinear (bool, optional): True if the activation of the first fully connected
+        layer should be used and False if the activations should be used after applying the nonlinear
+        activation function. Using the value after the nonlinearity degrades most, but sometimes
+        leads to extremely good results, while using the activations without nonlinearity guarantees
+        meaningful results that are of a good quality. Defaults to True.
 
     Returns:
         Callable: A lucent compatible objective to maximize a transformer neuron activation
     """
-    layer_descriptor = f'blocks_{block}_mlp_act'
+    layer_descriptor = f"blocks_{block}_mlp_{'fc1' if before_nonlinear else 'act'}"
+    print(layer_descriptor)
     @handle_batch(batch)
     def inner(model):
         layer = model(layer_descriptor)
@@ -86,7 +92,8 @@ def generate_most_stimulative_for_imgnet_id(model: VisionTransformer, imagenet_i
                                             diversity: bool=False, diversity_batchsize: int=None, 
                                             device: str=None, most_predictive_inds: torch.Tensor=None,
                                             iterations: List[int]=None, div_weight: float=1e2,
-                                            img_size: int=128, model_img_size: int=224):
+                                            img_size: int=128, model_img_size: int=224,
+                                            keys_before_nonlinear: bool=True):
     """Generate the most stimulative image for an imagenet class or multiple images for on class
     according to some diversity objective.
 
@@ -100,7 +107,9 @@ def generate_most_stimulative_for_imgnet_id(model: VisionTransformer, imagenet_i
         iterations (List[int], optional): The number of iterations at which you want to save the image. Should be in increasing order and the last element should be the number of iterations in total. Defaults to [500].
         div_weight (float, optional): The factor with which to weight the diversity objective together with the standard neuron objective. Defaults to 1e2.
         img_size (int, optional): The image size of the image to generate. Defaults to 128.
-        model-img_size (int, optional): The image size the model expects. Defaults to 224
+        model_img_size (int, optional): The image size the model expects. Defaults to 224.
+        keys_before_nonlinear (bool, optional): For a detailed documentation see key_neuron_objective function documentation. Defaults to True.
+
     """
 
     device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -117,11 +126,11 @@ def generate_most_stimulative_for_imgnet_id(model: VisionTransformer, imagenet_i
     diversity_batchsize = diversity_batchsize or 5
 
     block, ind, _ = most_predictive_inds[:,get_index_for_category(imagenet_id)].tolist()
-    neuron_obj = key_neuron_objective(block, ind)
+    neuron_obj = key_neuron_objective(block, ind, before_nonlinear=keys_before_nonlinear)
 
     transforms = transform.standard_transforms_for_device(device).copy()
     transforms.append(torch.nn.Upsample(size=model_img_size, mode='bilinear', align_corners=True))
-
+    
     if diversity:
         objective = neuron_obj - div_weight * transformer_diversity_objective(block)
         param_f = image_batch(img_size, diversity_batchsize, device=device)
