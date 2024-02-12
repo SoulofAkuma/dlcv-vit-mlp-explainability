@@ -63,7 +63,20 @@ def get_topk_activating_images(model: VisionTransformer, dataset: IndexDataset,
 def correct_prediction_rate(model: VisionTransformer, dataset: IndexDataset,
                                     huggingface_model_descriptor: str, device=None,
                                     show_progression: bool=True) -> Tuple[float, torch.Tensor]:
-    
+    """Run inference for all images in the dataset and calculate the percentage how many of
+    these images predicted the classes that is associated to them in the dataset.
+
+    Args:
+        model (VisionTransformer): The vision transformer to run inference on.
+        dataset (IndexDataset): One of the datasets in this codebase or a dataset where each index supports `__getitem__` for 'img' and returns a PIL Image and 'num_idx' and returns the index of the correct class
+        huggingface_model_descriptor (str): The huggingface model descriptor of the model for image preprocessing.
+        device (str, optional): The device to run inference on. Defaults to None.
+        show_progression (bool, optional): True if a tqdm range should be used. Defaults to True.
+
+    Returns:
+        Tuple[float, torch.Tensor]: The percentage how many of the predictions where correct and the actual predictions for all items in the dataset.
+    """
+
     device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     predicted_logits = torch.empty(len(dataset)).to(device)
