@@ -31,7 +31,6 @@ def key_neuron_objective(block: int, column: int, batch=None, before_nonlinear=T
         Callable: A lucent compatible objective to maximize a transformer neuron activation
     """
     layer_descriptor = f"blocks_{block}_mlp_{'fc1' if before_nonlinear else 'act'}"
-    print(layer_descriptor)
     @handle_batch(batch)
     def inner(model):
         layer = model(layer_descriptor)
