@@ -1,7 +1,7 @@
 import os
 import json
 import torch
-from generate_images import generate_images
+from generate_images_mixed_neurons import generate_images
 from PIL import Image
 import time
 
