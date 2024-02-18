@@ -75,20 +75,13 @@ def k_most_predictive_ind_for_class(projected_values: Union[torch.Tensor, List[t
     if type(projected_values) is list:
             projected_values = torch.stack(projected_values, dim=0)
 
-    _, hidden, classes = projected_values.shape
-    blocks_repr_values, best_repr_in_blocks = projected_values.topk(k, dim=0)
+    _, hidden, _ = projected_values.shape
+    _, best_repr_ind = projected_values.flatten(end_dim=1).topk(k, dim=0)
     if device is not None:
-        blocks_repr_values = blocks_repr_values.to(device)
+        best_repr_ind = best_repr_ind.to(device)
 
-    _, row_indices = blocks_repr_values.flatten(end_dim=1).topk(k, dim=0)
-    class_indices = torch.arange(classes)
-
-    if device is not None:
-        row_indices = row_indices.to(device)
-        class_indices = class_indices.to(device)
-    
-    block_indices = best_repr_in_blocks[row_indices // hidden, row_indices % hidden, class_indices]
-    row_indices = row_indices % hidden # account for flattening along k
+    block_indices = best_repr_ind // hidden
+    row_indices = best_repr_ind % hidden
     result = torch.stack([block_indices, row_indices]).swapaxes(0, 1)
 
     return result if device is None else result.to(device)

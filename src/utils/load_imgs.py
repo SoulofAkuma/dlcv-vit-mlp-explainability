@@ -28,7 +28,7 @@ def load_imgs_from_class_idx(
     """
 
     # Class index to imagenet_id map.
-    with open('data/imagenet_class_index.json', 'r') as file:
+    with open('../data/imagenet_class_index.json', 'r') as file:
         class_index_map = json.load(file)
 
     all_imgs = []

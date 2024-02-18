@@ -17,6 +17,7 @@ def generate_images(model_name, image_size, model_img_size, thresholds, classes,
 
         for img_name in classes[cls].keys():
 
+
             neurons = classes[cls][img_name]
 
             objective = neurons[0][2] * key_neuron_objective(neurons[0][0], neurons[0][1])
@@ -26,7 +27,7 @@ def generate_images(model_name, image_size, model_img_size, thresholds, classes,
             for i in range(1, len(neurons)):
                 objective += neurons[i][2] * key_neuron_objective(neurons[i][0], neurons[i][1])
                 div_obj += neurons[i][2] * key_neuron_objective(neurons[i][0], neurons[i][1]) \
-                           - neurons[0][2] * 0.001 * transformer_diversity_objective()
+                           - neurons[0][2] * 0.001 * transformer_diversity_objective(neurons[i][0])
 
 
             param_f_div = image_batch(image_size, batch_size=3, device=device)
@@ -52,5 +53,5 @@ def generate_images(model_name, image_size, model_img_size, thresholds, classes,
             for i, imglist in enumerate(div_result):
                 for ii, img in enumerate(imglist):
                     results[f'{cls}_div_batch_{img_name}_{ii}_{thresholds[i]}'] = (img * 255).astype(np.uint8)
-        
+
     return results

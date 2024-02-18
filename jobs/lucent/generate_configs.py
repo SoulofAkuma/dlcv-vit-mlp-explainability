@@ -16,7 +16,7 @@ def create_configs(dir: str):
 
     os.makedirs(dir, exist_ok=True)
 
-    with open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data/imagenet_class_index.json'))
+    with open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src/data/imagenet_class_index.json'))
               , 'r') as file:
         mapping = json.load(file)
 

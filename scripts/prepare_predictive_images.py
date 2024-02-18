@@ -1,12 +1,16 @@
 import os
 import shutil
 import argparse
+from typing import List
 
-def prepare_data(imgs_path: str):
+DEFAULT_ITERATIONS = ['250', '500', '750']
+DEFAULT_CATEGORIES = ['clear', 'div']
+
+def prepare_data(imgs_path: str, categories: List[str], iterations: List[str]):
     
     [[os.makedirs(os.path.join(imgs_path, cat, iterations)) 
-      for iterations in ['250', '500', '750']]
-      for cat in ['clear', 'div']]
+      for iterations in iterations]
+      for cat in categories]
 
     _, _, files = next(os.walk(imgs_path))
 
@@ -31,6 +35,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--images-path', 
                         default=os.path.join(os.path.dirname(__file__), 'images'),
-                        type=str)
+                        type=str, required=True)
+    parser.add_argument('--iterations', default=DEFAULT_ITERATIONS,
+                        nargs='+', required=False, type=str)
+    parser.add_argument('--categories', default=DEFAULT_CATEGORIES,
+                        nargs='+', required=False, type=str)
     args = parser.parse_args()
-    prepare_data(args.images_path)
+    prepare_data(args.images_path, args.categories, args.iterations)

@@ -1,15 +1,16 @@
 from typing import Union, List
 import torch
+from timm.models.vision_transformer import VisionTransformer
 
-def embedding_projection(vit, values: Union[List[torch.Tensor],torch.Tensor], device=None) -> torch.Tensor:
+def embedding_projection(vit: VisionTransformer, values: Union[List[torch.Tensor],torch.Tensor], device=None) -> torch.Tensor:
     """Project the value vectors onto the class embedding space of the transformer
 
     Args:
-        vit (timm.models.vision_transformer.VisionTransformer): The vision transformer
-        values (List[torch.Tensor]): The list of value vector matrices
+        vit (VisionTransformer): The vision transformer
+        values (Union[List[torch.Tensor],torch.Tensor]): The list of value vector matrices or a 3 dimensional value vectors matrix of shape (number of value vectors, hidden_dim)
 
     Returns:
-        List[torch.Tensor]: The projection of each of the value vector matrices
+        torch.Tensor: The projection of each of the value vector matrices
     """
     proj = vit.head.eval()
     norm = vit.norm.eval()

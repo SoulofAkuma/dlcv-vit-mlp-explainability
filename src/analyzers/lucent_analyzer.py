@@ -4,7 +4,7 @@ import torch
 from src.utils.extraction import extract_value_vectors
 from src.utils.model import embedding_projection
 from src.analyzers.mlp_value_analyzer import most_predictive_ind_for_class
-from src.utils.imagenet import get_index_for_category
+from src.utils.imagenet import get_index_for_imagenet_id
 from torch.utils.data import DataLoader
 from src.utils.transformation import transform_images
 from src.utils.extraction import extract_computed_key_vectors
