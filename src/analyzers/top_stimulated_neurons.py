@@ -8,12 +8,8 @@ from src.datasets.ImageNet import ImageNetDataset
 from src.utils.model import embedding_projection
 from src.utils.load_imgs import load_imgs_from_class_idx
 
-<<<<<<< HEAD
 
 def find_topk_stimulated_key_vectors(model, k: int = 1, b: int = None) -> torch.tensor:
-=======
-def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
->>>>>>> a4e29ca43bce52bc0ea94f55a1c9af3f27267cae
     """
     Firstly, for each class, find the top k value vectors that are best predictive. 
     Then return the key vectors that are corresponding to these value vectors.
