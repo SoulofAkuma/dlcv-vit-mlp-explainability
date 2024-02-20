@@ -1,3 +1,9 @@
 TestNotebook.ipynb
 **/__pycache__/*
 **/.ipynb_checkpoints/*
+**/results/*
+**/build/*
+dlcv_vit_mlp_explainability.egg-info/*
+configs/*
+configs-mixed-neurons/*
+images/*

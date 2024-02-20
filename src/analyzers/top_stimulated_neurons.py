@@ -1,15 +1,19 @@
 import numpy as np
 import torch
 
-from src.utils.extraction import extract_key_vectors
+from src.utils.extraction import extract_key_weights
 from src.utils.extraction import extract_value_vectors
 from src.utils.extraction import extract_computed_key_vectors
 from src.datasets.ImageNet import ImageNetDataset
 from src.utils.model import embedding_projection
 from src.utils.load_imgs import load_imgs_from_class_idx
 
+<<<<<<< HEAD
 
 def find_topk_stimulated_key_vectors(model, k: int = 1, b: int = None) -> torch.tensor:
+=======
+def find_topk_stimulated_key_vectors(model, k: int = 1) -> torch.tensor:
+>>>>>>> a4e29ca43bce52bc0ea94f55a1c9af3f27267cae
     """
     Firstly, for each class, find the top k value vectors that are best predictive. 
     Then return the key vectors that are corresponding to these value vectors.
@@ -31,7 +35,7 @@ def find_topk_stimulated_key_vectors(model, k: int = 1, b: int = None) -> torch.
     """
 
     # Extract key vectors and value vectors. Each of them has shape (12, 3072, 768).
-    key_vectors = extract_key_vectors(model)
+    key_vectors = extract_key_weights(model)
     key_vectors = torch.stack(key_vectors)
     key_vectors = key_vectors.transpose(1, 2)
     value_vectors = extract_value_vectors(model)
