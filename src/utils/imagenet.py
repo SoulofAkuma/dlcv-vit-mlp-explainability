@@ -54,7 +54,7 @@ def get_imagenet_id_for_names(names: List[str]) -> List[str]:
     Returns:
         List[str]: The list of imagenet ids
     """
-    return MAPPING_FRAME.loc[MAPPING_FRAME['name'].isin(names)].index.tolist()
+    return [MAPPING_FRAME[MAPPING_FRAME['name']==name].index[0] for name in names]
 
 def get_names_for_imagenet_ids(imagenet_ids: List[str]) -> List[str]:
     """Return the readable names for a list of imagenet ids
