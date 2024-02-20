@@ -41,7 +41,7 @@ class HeatMap:
         self.extractor = create_feature_extractor(model, layers)
 
         # Class index map
-        with open('data/imagenet_class_index.json', 'r') as file:
+        with open('src/data/imagenet_class_index.json', 'r') as file:
             self.class_index_map = json.load(file)
 
         self.dataset = dataset
@@ -50,7 +50,7 @@ class HeatMap:
         self.k = topk_indices.shape[0]
 
 
-    def show(self, class_idx: int, k: int=1, img_indices: List[int]=[i for i in range(50)], show_predict=False):
+    def show(self, class_idx: int, k: int=1, img_indices: List[int]=[i for i in range(50)], show_predict=False, verbose=False):
         """
         Plot heat maps of activations of top k key neurons from a specific class on a number of images.
 
@@ -73,9 +73,12 @@ class HeatMap:
 
         # Fetch all 50 images and preprocess them from the given class_idx.
         imagenet_id = self.class_index_map[str(class_idx)][0]
-        print(f'Class name {self.class_index_map[str(class_idx)][1]}')
-        imgs = transform_images([img['img'] for img in self.dataset.get_images_from_class(imagenet_id)],
+        if verbose:
+            print(f'Class name {self.class_index_map[str(class_idx)][1]}')
+        imgs = transform_images([img['img'] for img in self.dataset.get_images_from_imgnet_id(imagenet_id)],
                                 self.huggingface_model_descriptor)
+
+        imgs = torch.concat(imgs, dim=0)
 
         if img_indices is None:
             img_indices = np.arange(num_imgs)

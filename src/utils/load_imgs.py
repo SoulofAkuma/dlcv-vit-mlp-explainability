@@ -62,12 +62,12 @@ def show_img_of_class(dataset: ImageNetDataset, huggingface_model_descriptor: st
         Plot all 50 images of the class of given index.
     """
 
-    with open('data/imagenet_class_index.json', 'r') as file:
+    with open('src/data/imagenet_class_index.json', 'r') as file:
         class_index_map = json.load(file)
 
     imagenet_id = class_index_map[str(class_idx)][0]
     print(f'Class name {class_index_map[str(class_idx)][1]}')
-    imgs = transform_images([img['img'] for img in dataset.get_images_from_class(imagenet_id)],
+    imgs = transform_images([img['img'] for img in dataset.get_images_from_imgnet_id(imagenet_id)],
                             huggingface_model_descriptor)
 
     num_rows = 5
@@ -76,7 +76,7 @@ def show_img_of_class(dataset: ImageNetDataset, huggingface_model_descriptor: st
     for i in range(num_rows):
         for j in range(num_cols):
             plt.subplot(num_rows, num_cols, i*num_cols+j+1)
-            im = np.transpose(imgs[i*num_cols + j].numpy(), (1,2,0))
+            im = np.transpose(torch.squeeze(imgs[i*num_cols + j]).numpy(), (1,2,0))
             im = (im - im.min()) / (im.max() - im.min())
             plt.axis(False)
             plt.title(i*num_cols+j)
@@ -96,7 +96,7 @@ def show_patches(dataset: ImageNetDataset, huggingface_model_descriptor: str, cl
         Plot the image that is partitioned into 196 patches.
     """
 
-    with open('data/imagenet_class_index.json', 'r') as file:
+    with open('src/data/imagenet_class_index.json', 'r') as file:
         class_index_map = json.load(file)
 
     imagenet_id = class_index_map[str(class_idx)][0]

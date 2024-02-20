@@ -44,7 +44,7 @@ class Gradient:
         self.extractor = create_feature_extractor(model, layers)
 
         # Class index map
-        with open('data/imagenet_class_index.json', 'r') as file:
+        with open('src/data/imagenet_class_index.json', 'r') as file:
             self.class_index_map = json.load(file)
 
         self.dataset = dataset
@@ -114,9 +114,10 @@ class Gradient:
         # Fetch all 50 images and preprocess them from the given class_idx.
         imagenet_id = self.class_index_map[str(class_idx)][0]
         if verbose: print(f'Class name {self.class_index_map[str(class_idx)][1]}')
-        imgs = transform_images([img['img'] for img in self.dataset.get_images_from_class(imagenet_id)],
+        imgs = transform_images([img['img'] for img in self.dataset.get_images_from_imgnet_id(imagenet_id)],
                                 self.huggingface_model_descriptor)
 
+        imgs = torch.concat(imgs, dim=0)
         num_imgs = len(img_indices)
         
         if plot:
@@ -250,194 +251,3 @@ class Gradient:
             plt.show()
 
         return im, heatmap, applied
-
-    def useless_gradient(
-        self,
-        class_idx,
-        img_idx: int,
-        num: int = 1,
-        block_idx: int = 10
-    ):
-        """
-        Another gradient method for highlighting the object of interest in an image.
-        In this case, the gradient of the prediction loss with respect to the
-        neural activation are used.
-        
-        The essential ideas are:
-
-        1. Take a neuron X that is not best for predicting a class A.
-        This neuron doesn't focus on the relevant part of the object in the
-        image. When we take it's hidden representation in the penultimate 
-        block (block 11) and project it to the embedding space, the scores for 
-        class A are very low and hence it's losses are large.
-
-        2. Compute the gradient of these losses with respect to the 196 neural
-        activations of this neuron X, because there are in total 196 image 
-        patches and each patch responsible for a loss.
-
-        3. Reshape these 196 neural activations into (14, 14) and plot a
-        upsized heatmap based on the activation. If succeed, the gradients
-        will somewhat highlight the object.
-
-        4. If this is the case, these gradients will act sort of an 
-        "advice signal", which imply: Had this neuron X focused on these 
-        highlighted patches instead, it's loss would have decreased and it 
-        would have promoted the class better.
-
-        Disclaimer: Unfortunately to find this specific low-ranked neuron X
-        is not easy and not every low-ranked neuron admit such gradients
-        that highlight the relevant patches. Most of the time the gradients
-        would highlight random or completely irrelevant patches.
-
-        However, these kind of low-ranked neurons X usually have a high
-        average-neural-activations across the patches. So a proper way to
-        identify them would be investigate the top neurons having the highest
-        average-neural-activations across patches. For each of these 
-        investigated neuron, this function would plot their gradient map and
-        it's activations (both as heatmap) for visualization.
-
-        This function only serves as a method for identifying these neuron X.
-
-        Args:
-            class_idx (int)			: class of interest
-            img_idx	(int)			: index of image
-            num (int)				: number of neurons to be investigated (default=4)
-            block_idx (int)			: the block which contains the neurons
-                                        that need to be investigated (default=10)
-        """
-
-        # ------- Define extractor and load image --------------
-        layer_types = ["mlp.act", "mlp.fc2", "add_1"]
-        layers = [f"blocks.{b}.{lt}" for lt in layer_types for b in range(12)]
-        extractor = create_feature_extractor(self.model, layers)
-        block_idx = 10
-        with open('data/imagenet_class_index.json', 'r') as file:
-            class_index_map = json.load(file)
-
-        print(f'Class name {class_index_map[str(class_idx)][1]}')
-        imagenet_id = class_index_map[str(class_idx)][0]
-        imgs = transform_images([img['img'] for img in self.dataset.get_images_from_class(imagenet_id)],
-                        self.huggingface_model_descriptor)
-        img = imgs[img_idx].unsqueeze(0)
-
-        # 1. Feed the image into extractor.
-        # 2. Extract mlp activations and features from fc2.
-        # 3. Project fc2 into class embedding.
-        # 4. Every patch promote some class, compute the loss occured by each patch
-        #		with respect to the neural activations of this patch (3072 neurons)
-        # 5. Only investigate the gradient with respect to the neuron
-        #		having the largest average-activation across patches.
-        
-        img.requires_grad_()
-        out = extractor(img)
-        mlp_act = out[f"blocks.{block_idx}.mlp.act"]		        # (1, 197, 3072)
-        mlp_fc2 = out[f"blocks.{block_idx}.mlp.fc2"]		        # (1, 197, 768)
-
-        # Project hidden representations into embedding space.
-        res_proj = self.model.head(self.model.norm(mlp_fc2))		# (1, 197, 1000)
-
-        # Compute rank of value vector based on how predictive they are for each class.
-        value_vectors = torch.stack(
-            extract_value_vectors(self.model))[block_idx]		    # (3072, 768)
-        val_proj = self.model.head(self.model.norm(value_vectors))	# (3072, 1000)
-        val_proj = torch.argsort(
-            val_proj, dim=0, descending=True)				        # (3072, 1000)	
-
-        # Compute cross entropy loss
-        num_classes = 1000
-        ce = CrossEntropyLoss(reduction='none')
-        res_proj = res_proj.squeeze(0)
-        res_proj = softmax(res_proj, dim=1)
-
-        target = torch.zeros(1, num_classes).to(self.device)
-        target[0, class_idx] = 1
-        target = target.repeat(res_proj.shape[0], 1) 
-        loss = ce(res_proj, target)
-
-        # Average activation values of 3072 neurons and sort them descendingly.
-        avg_act = torch.mean(mlp_act[0, 1:], dim=0)
-        ordered_act_indices = torch.argsort(avg_act, descending=True)
-
-        # ------ Compute gradient of loss (shape 197) with respect to the neural activation ------.
-        large_grads = torch.zeros(196, 3072)
-        grad_map = torch.zeros(196)
-        for j in range(1, 197):
-            grads = torch.autograd.grad(loss[j], mlp_act, retain_graph=True)	
-            grads = -grads[0][0, j]			# (3072,)
-            large_grads[j-1] = grads
-
-        # ----------------------- Start plotting here -----------------------------
-        ncols = 4
-        plt.figure(figsize=(4*ncols, 4*num))
-        plt.tight_layout()
-        for i in range(num):
-            grad_map = torch.zeros(196)
-            for j in range(1, 197):
-                grad_map[j-1] += large_grads[j-1, ordered_act_indices[i]]
-                    
-            # Only allow positive gradients in gradient map.
-            # Without this step it wouldn't work. Probably because a gradient map
-            # that is dominated by negative gradients will cause the heat map to
-            # be inverted.
-            # Because negative gradient would only increase the loss. So applying
-            # relu to eliminate them would also be sensible.
-            grad_map = torch.nn.functional.relu(grad_map)
-
-            im = img.squeeze(0).permute(1,2,0).detach().numpy()
-            im = (im-im.min()) / (im.max()-im.min())
-            plt.subplot(num, ncols, i*ncols+1)
-            plt.axis(False)
-            plt.title(f"Original img - index {img_idx}")
-            plt.imshow(im)
-
-            # ------- Compute and plot gradient heat map -------------
-            grad_map = (grad_map - grad_map.min()) / (grad_map.max() - grad_map.min())
-            grad_map = grad_map.reshape(1, 1, 14, 14).float()
-            grad_map = torch.nn.functional.interpolate(grad_map, size=224, mode='bilinear')
-            grad_map = torch.squeeze(grad_map).detach().numpy()
-            heatmap = cv.applyColorMap(np.uint8(255 * grad_map), cv.COLORMAP_JET)
-            heatmap = np.float32(heatmap) / 255
-
-            plt.subplot(num, ncols, i*ncols+2)
-            plt.axis(False)
-            plt.title(f"Gradient ({i+1})")
-            plt.xlabel("Img patch index")
-            plt.ylabel("Gradient")
-            plt.imshow(cv.cvtColor(heatmap, cv.COLOR_BGR2RGB))
-
-            # -------- Apply headmap to image --------------------------
-            vis = heatmap + np.float32(im)
-            vis = vis / np.max(vis)
-            vis = np.uint8(255 * vis)
-            vis = cv.cvtColor(np.array(vis), cv.COLOR_RGB2BGR)
-            plt.subplot(num, ncols, i*ncols+3)
-            plt.axis(False)
-            plt.title("Gradient Applied")
-            plt.imshow(vis)
-
-            # Omit the cls token, take the key vector whose activations need to be plotted.
-            act = mlp_act[0, 1:, ordered_act_indices[i]]
-
-            # Build heat map: reshape the activation map, interpolate to suitable size (224x224) and convert to a color map.
-            act = act.reshape(14, 14)
-            act = (act-act.min()) / (act.max()-act.min())
-            mask = act.reshape(1, 1, 14, 14).float()
-            mask = torch.nn.functional.interpolate(mask, size=224, mode='bilinear')
-            mask = torch.squeeze(mask).detach().numpy()
-            heatmap = cv.applyColorMap(np.uint8(mask*255), cv.COLORMAP_JET)
-            heatmap = np.float32(heatmap) / 255
-
-            # Compute the rank of this neuron.
-            rank = (val_proj[:, class_idx] == ordered_act_indices[i]).nonzero().item()
-
-            # Apply heat map to the original image by addition.
-            vis = heatmap + np.float32(im)
-            vis = vis / np.max(vis)
-            vis = np.uint8(vis*255)
-            vis = cv.cvtColor(vis, cv.COLOR_BGR2RGB)
-            plt.subplot(num, ncols, i*ncols+4)
-            plt.axis(False)
-            plt.title(f"Activation (Rank: {rank+1})")
-            plt.imshow(vis)
-        
-        plt.show()
